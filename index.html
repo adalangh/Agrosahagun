@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#176b45">
+<title>AgroSahagún | Monitoreo de cultivos en tiempo real</title>
+<style>
+/* Estilos originales restaurados y optimizados */
+:root{--green:#176b45;--green2:#238557;--lime:#dff2e7;--ink:#183329;--muted:#64756c;--bg:#f3f7f4;--white:#fff;--line:#e2ebe5;--orange:#e99a36;--red:#c94b43;--shadow:0 8px 28px #173c2910}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+aside{background:#123d2b;color:#eaf6ef;padding:24px 16px;display:flex;flex-direction:column;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px}.logo{width:42px;height:42px;border-radius:13px;background:#d8f1e1;color:#176b45;display:grid;place-items:center;font-size:23px}.brand strong{display:block;font-size:17px}.brand small{color:#a9cbb7}
+nav{display:grid;gap:7px}nav button{border:0;background:transparent;color:#c5ddce;text-align:left;padding:12px 13px;border-radius:10px;font-weight:600}nav button.active,nav button:hover{background:#ffffff1a;color:white}
+.side-note{margin-top:auto;border:1px solid #ffffff2b;border-radius:14px;padding:14px;font-size:12px;line-height:1.5;color:#c6dfcf}.side-note b{color:#fff}
+main{min-width:0}.topbar{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:15px}.top-right{display:flex;align-items:center;gap:12px}.status{font-size:12px;font-weight:700;padding:7px 11px;border-radius:99px;background:#e5f6eb;color:#176b45}.status.off{background:#fff1dd;color:#8d5a12}
+.content{padding:28px 30px 44px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block;animation:fadeIn 0.3s ease} @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.eyebrow{text-transform:uppercase;letter-spacing:.11em;color:var(--green2);font-size:11px;font-weight:800}.heading h1{margin:5px 0 6px;font-size:28px}.sub{color:var(--muted);margin:0;line-height:1.5}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:700;background:var(--green);color:white}.btn:hover{background:#105738}.btn.secondary{background:#e8f2ec;color:var(--green)}.btn.ghost{background:white;color:var(--green);border:1px solid var(--line)}.btn.danger{background:#fff0ef;color:var(--red)}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}.stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat-value{font-size:27px;font-weight:800;margin:8px 0 4px}.stat-foot{font-size:12px;color:var(--muted)}.two{grid-template-columns:1.2fr .8fr}.three{grid-template-columns:repeat(3,1fr)}
+.card h3{margin:0 0 14px;font-size:16px}.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.card-head h3{margin:0}.pill{font-size:11px;padding:5px 9px;border-radius:99px;background:#edf6f0;color:var(--green);font-weight:800}.empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line)}th{font-size:11px;text-transform:uppercase;color:var(--muted)}.tag{font-size:11px;font-weight:800;border-radius:99px;padding:5px 8px;background:#e8f4ec;color:#176b45}.tag.warn{background:#fff3df;color:#8b5d14}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:800;color:#43584c}.field input,.field select,.field textarea{width:100%;border:1px solid #dbe6de;border-radius:9px;padding:11px 12px;outline:none}.field input:focus,.field select:focus{border-color:var(--green2);box-shadow:0 0 0 3px #23855718}.actions{display:flex;gap:9px;margin-top:16px}.notice{padding:12px 14px;border-radius:11px;background:#eef6f0;color:#355b45;font-size:12px;line-height:1.5;margin:12px 0}.notice.warn{background:#fff5e7;color:#79551d}
+.toast{position:fixed;right:22px;bottom:22px;background:#173f2c;color:#fff;padding:13px 17px;border-radius:11px;box-shadow:var(--shadow);display:none;z-index:10}.toast.show{display:block}
+.modal{position:fixed;inset:0;background:#102a1f77;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}.modal-box{background:white;border-radius:17px;padding:22px;width:100%;max-width:600px}.close{float:right;border:0;background:#eef4ef;border-radius:8px;padding:6px 10px}
+.live-badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#a53c35;background:#ffedeb;padding:6px 10px;border-radius:99px}.live-badge i{width:8px;height:8px;border-radius:50%;background:#c94b43;animation:pulse 1.4s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 #c94b4366}70%{box-shadow:0 0 0 8px #c94b4300}100%{box-shadow:0 0 0 0 #c94b4300}}
+.mon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}.mon-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(180deg,#fff,#f6faf7);position:relative}.mon-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.mon-val{font-size:30px;font-weight:800;margin:10px 0 2px;font-variant-numeric:tabular-nums}.mon-val small{font-size:11px;font-weight:600;color:var(--muted);margin-left:6px}.spark{width:100%;height:36px;display:block;margin:6px 0}.mon-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.map-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--line);height:380px;background:#e8f0ea}.map-wrap iframe{width:100%;height:100%;border:0;display:block}
+@media(max-width:950px){.app{grid-template-columns:1fr}nav{display:flex;overflow:auto}.stats,.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand"><div class="logo">🌱</div><div><strong>AgroSahagún</strong><small>Gestión agrícola inteligente</small></div></div>
+  <nav id="nav">
+    <button class="active" data-page="inicio">▦ &nbsp; Panel general</button>
+    <button data-page="cultivos">♧ &nbsp; Mis cultivos</button>
+    <button data-page="registros">⌁ &nbsp; Registros de campo</button>
+    <button data-page="clima">☼ &nbsp; Motor Analítico</button>
+    <button data-page="analisis">▤ &nbsp; KPIs y Exportación</button>
+    <button data-page="datos">⚙ &nbsp; Conectividad</button>
+  </nav>
+  <div class="side-note"><b>Prototipo Etapa 4 - Grupo 52</b><br>Interfaces enriquecidas, gráficas de humedad, variables climáticas y mapa interactivo.</div>
+</aside>
+<main>
+  <header class="topbar">
+    <div><b id="pageTitle">Panel general</b><br><small style="color:var(--muted)">Sistema web de apoyo a decisiones agrícolas</small></div>
+    <div class="top-right"><span id="connection" class="status">● En línea (simulado)</span><small id="syncLabel" style="color:var(--muted)">Sincronizado</small></div>
+  </header>
+  <div class="content">
+    
+    <!-- PANEL GENERAL -->
+    <section class="page active" id="inicio">
+      <div class="heading">
+        <div><div class="eyebrow">Vereda Salguerito · Sahagún, Córdoba</div><h1>Monitoreo de cultivos</h1><p class="sub">Sigue en tiempo real el estado del suelo, clima y sincroniza labores de campo.</p></div>
+        <button class="btn" onclick="openModal('cropModal')">＋ Registrar cultivo</button>
+      </div>
+      
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <div><h3>Monitoreo Avanzado en Tiempo Real</h3><div class="muted" style="font-size:12px">Humedad, clima y recomendaciones de riego</div></div>
+          <div class="live-badge"><i></i>EN VIVO</div>
+        </div>
+        <div class="mon-grid" id="liveGrid"></div>
+      </div>
+
+      <div class="grid stats">
+        <div class="card"><div class="stat-label">Cultivos Activos</div><div class="stat-value" id="statCrops">0</div></div>
+        <div class="card"><div class="stat-label">Registros Guardados</div><div class="stat-value" id="statLogs">0</div></div>
+        <div class="card"><div class="stat-label">Humedad Promedio</div><div class="stat-value" id="statMoisture">—</div></div>
+        <div class="card"><div class="stat-label">Datos Offline</div><div class="stat-value" id="statPending">0</div></div>
+      </div>
+      
+      <div class="grid two">
+        <div class="card">
+          <div class="card-head"><h3>Mapa del Sector</h3><span class="pill">GPS Activo</span></div>
+          <div class="map-wrap">
+            <!-- Iframe de mapa solicitado por el usuario -->
+            <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d891.7635694622686!2d-75.36494173046648!3d8.90528632438582!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses-419!2sus!4v1794164315478!5m2!1ses-419!2sus" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Alertas Inteligentes</h3><span class="pill">Motor de Reglas</span></div>
+          <div id="homeAlerts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOTOR ANALÍTICO -->
+    <section class="page" id="clima">
+      <div class="heading">
+        <div><div class="eyebrow">Bloque de Procesamiento</div><h1>Motor de Análisis Agrícola</h1><p class="sub">Cálculo de requerimientos hídricos ($ET_c = K_c \times ET_0$) establecido en el diseño técnico.</p></div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>Variables de Entrada Regionales</h3>
+          <div class="notice"><b>ET0 (Evapotranspiración de referencia):</b> 5.2 mm/día (Promedio Sabana de Córdoba).</div>
+          <div class="notice"><b>Kc (Coeficiente de Cultivo):</b> Calculado dinámicamente según la etapa de desarrollo de sus cultivos.</div>
+          <div class="notice warn"><b>Ecuación Aplicada:</b> El sistema cruza el pronóstico con el tipo de cultivo para determinar la lámina de agua requerida.</div>
+        </div>
+        <div class="card">
+          <h3>Análisis de Déficit Hídrico por Cultivo</h3>
+          <div id="analisisHidrico"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OTROS PANELES -->
+    <section class="page" id="cultivos"><div class="heading"><h1>Mis cultivos</h1></div><div class="card"><div id="cropTable"></div></div></section>
+    <section class="page" id="registros"><div class="heading"><h1>Registros de campo</h1></div><div class="grid two"><div class="card"><form id="logForm"><div class="form-grid"><div class="field full"><label>Cultivo</label><select id="logCrop" required></select></div><div class="field"><label>Tipo</label><select id="logType"><option>Humedad del suelo</option><option>Riego</option><option>Fertilización</option></select></div><div class="field"><label>Valor (Cantidad/%/L)</label><input id="logValue" type="number" required></div></div><div class="actions"><button class="btn" type="submit">Guardar Localmente</button></div></form></div><div class="card"><div id="logTable"></div></div></div></section>
+    <section class="page" id="analisis"><div class="heading"><h1>KPIs y Exportación</h1><button class="btn secondary" onclick="exportCSV()">↓ Descargar CSV</button></div><div class="card"><div id="logChart" style="height:200px; display:flex; align-items:flex-end; gap:10px;"></div></div></section>
+    <section class="page" id="datos"><div class="heading"><h1>Gestor de Conectividad</h1></div><div class="grid two"><div class="card"><h3>Simulador de Red</h3><p id="connectText">Simula la pérdida de señal en la finca.</p><div class="actions"><button class="btn danger" onclick="setConnection(false)">Apagar Internet</button><button class="btn" onclick="setConnection(true)">Restaurar Internet</button></div></div><div class="card"><h3>Cola de Sincronización</h3><h2 id="queueCount" style="margin:0; font-size:32px;">0</h2><p style="color:var(--muted)">Registros en caché (localStorage)</p><button class="btn" onclick="syncData()">Sincronizar a la Nube</button></div></div></section>
+  </div>
+</main>
+</div>
+
+<!-- Modal Cultivo (Actualizado con 6 cultivos) -->
+<div class="modal" id="cropModal"><div class="modal-box"><button class="close" onclick="closeModal('cropModal')">✕</button><h2>Registrar cultivo</h2><form id="cropForm"><div class="form-grid">
+  <div class="field"><label>Cultivo</label>
+    <select id="cropName" required>
+      <option value="Yuca">Yuca</option>
+      <option value="Maíz">Maíz</option>
+      <option value="Ñame">Ñame</option>
+      <option value="Berenjena">Berenjena</option>
+      <option value="Plátano">Plátano</option>
+      <option value="Ají">Ají dulce</option>
+    </select>
+  </div>
+  <div class="field"><label>Área (ha)</label><input id="cropArea" type="number" step="0.1" required></div>
+  <div class="field full"><label>Etapa de desarrollo (Afecta el factor Kc)</label><select id="cropStage"><option>Siembra</option><option>Desarrollo vegetativo</option><option>Floración/Fructificación</option><option>Cosecha</option></select></div>
+</div><div class="actions"><button class="btn" type="submit">Guardar</button></div></form></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const APP_KEY = 'agrosahagun_v3';
+let state = { crops: [], logs: [] };
+let isOnline = true;
+let liveHist = {}; // Historial para las gráficas
+
+// Base de datos de requerimientos agronómicos para los 6 cultivos
+const cropInfo = {
+    'Yuca': { freq: '1 vez/semana (luego quincenal)', kcBase: 0.8 },
+    'Maíz': { freq: 'Cada 3-4 días (Alta demanda)', kcBase: 1.2 },
+    'Ñame': { freq: '1 a 2 veces por semana', kcBase: 1.0 },
+    'Berenjena': { freq: 'Cada 2-3 días', kcBase: 1.05 },
+    'Plátano': { freq: '2 veces por semana', kcBase: 1.1 },
+    'Ají': { freq: 'Cada 3-4 días', kcBase: 0.95 }
+};
+
+function initApp() {
+    const saved = localStorage.getItem(APP_KEY);
+    if (saved) state = JSON.parse(saved);
+    else {
+        state.crops = [
+            { id: '1', name: 'Yuca', area: 2.5, stage: 'Desarrollo vegetativo' },
+            { id: '2', name: 'Maíz', area: 1.2, stage: 'Floración/Fructificación' }
+        ];
+        saveData();
+    }
+    setupNavigation();
+    updateUI();
+    setInterval(simulateRealTimeSensors, 3000);
+}
+
+function saveData() { localStorage.setItem(APP_KEY, JSON.stringify(state)); updateUI(); }
+
+// Motor Analítico
+function calcularETc(nombreCultivo, etapa) {
+    const ET0_SAHAGUN = 5.2; 
+    let kc = cropInfo[nombreCultivo]?.kcBase || 0.8;
+    if(etapa === 'Siembra') kc *= 0.5;
+    if(etapa === 'Cosecha') kc *= 0.7;
+    
+    const etc = ET0_SAHAGUN * kc;
+    return { kc: kc.toFixed(2), etc: etc.toFixed(2), volumenHa: (etc * 10).toFixed(0) };
+}
+
+// Interfaz Gráfica
+function updateUI() {
+    const pendingLogs = state.logs.filter(l => !l.synced).length;
+    document.getElementById('statCrops').innerText = state.crops.length;
+    document.getElementById('statLogs').innerText = state.logs.length;
+    document.getElementById('statPending').innerText = pendingLogs;
+    document.getElementById('queueCount').innerText = pendingLogs;
+    
+    const connEl = document.getElementById('connection');
+    connEl.innerText = isOnline ? '● En línea' : '● Offline (Local)';
+    connEl.className = `status ${isOnline ? '' : 'off'}`;
+    document.getElementById('syncLabel').innerText = pendingLogs > 0 ? `${pendingLogs} pendientes` : 'Sincronizado';
+
+    // Generar Selectores y Tablas
+    document.getElementById('logCrop').innerHTML = state.crops.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    
+    document.getElementById('cropTable').innerHTML = `<table><tr><th>Cultivo</th><th>Área</th><th>Etapa</th><th>Acción</th></tr>${state.crops.map(c => `<tr><td><b>${c.name}</b></td><td>${c.area} ha</td><td><span class="tag">${c.stage}</span></td><td><button class="btn ghost" onclick="deleteCrop('${c.id}')">Eliminar</button></td></tr>`).join('')}</table>`;
+
+    document.getElementById('logTable').innerHTML = `<table><tr><th>Cultivo</th><th>Actividad</th><th>Valor</th><th>Estado Red</th></tr>${state.logs.slice().reverse().map(l => {
+        const cName = state.crops.find(c => c.id === l.cropId)?.name || 'N/A';
+        return `<tr><td>${cName}</td><td>${l.type}</td><td>${l.value}</td><td>${l.synced ? '<span class="tag">Nube</span>' : '<span class="tag warn">Local</span>'}</td></tr>`;
+    }).join('')}</table>`;
+
+    // Render Análisis
+    document.getElementById('analisisHidrico').innerHTML = state.crops.map(c => {
+        const analisis = calcularETc(c.name, c.stage);
+        return `<div class="notice" style="background:white; border:1px solid var(--line);"><h4 style="margin:0 0 8px; color:var(--green)">${c.name} <small>(${c.area} ha)</small></h4><div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; text-align:center;"><div><small>Factor Kc</small><br><b>${analisis.kc}</b></div><div><small>Req. (ETc)</small><br><b style="color:var(--orange)">${analisis.etc} mm</b></div><div><small>Volumen</small><br><b style="color:#2a75d3">${analisis.volumenHa} m³/ha</b></div></div></div>`;
+    }).join('');
+}
+
+// Simulador en tiempo real (Gráficas SVG + Datos Ambientales)
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function sparkSVG(arr) {
+    let w = 250, h = 36, mn = Math.min(...arr), mx = Math.max(...arr), sp = (mx - mn) || 1;
+    let pts = arr.map((v, i) => (i / (arr.length - 1 || 1) * w).toFixed(1) + ',' + (h - 3 - (v - mn) / sp * (h - 6)).toFixed(1)).join(' ');
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="spark"><polyline points="${pts}" fill="none" stroke="#238557" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+
+function simulateRealTimeSensors() {
+    const grid = document.getElementById('liveGrid');
+    const alerts = document.getElementById('homeAlerts');
+    let alertHtml = '';
+    let globalMoist = [];
+
+    grid.innerHTML = state.crops.map(c => {
+        if (!liveHist[c.id]) liveHist[c.id] = { moist: Array(15).fill(rnd(35, 50)), temp: rnd(28, 34), airHum: rnd(60, 80) };
+        let h = liveHist[c.id];
+        
+        // Simular variación
+        h.moist.push(Math.max(15, Math.min(80, h.moist[h.moist.length-1] + rnd(-2, 1.8))));
+        h.moist.shift();
+        h.temp += rnd(-0.5, 0.5); h.airHum += rnd(-1, 1);
+        
+        let currMoist = h.moist[h.moist.length-1];
+        globalMoist.push(currMoist);
+        let isCritical = currMoist < 30;
+        let riegoFreq = cropInfo[c.name]?.freq || 'Según evaluación';
+        
+        if (isCritical) alertHtml += `<div class="notice warn"><b>Alerta de riego:</b> ${c.name} registra humedad crítica (${currMoist.toFixed(1)}%).</div>`;
+
+        return `
+        <div class="mon-card" style="border-left: 4px solid ${isCritical ? 'var(--orange)' : 'var(--green)'}">
+            <div class="mon-top">
+                <div><b>${c.name}</b><div style="font-size:11px; color:var(--muted)">${c.stage}</div></div>
+                <span class="tag ${isCritical ? 'warn' : ''}">${isCritical ? 'Humedad Baja' : 'Óptimo'}</span>
+            </div>
+            <div class="mon-val">${currMoist.toFixed(1)}<small>% humedad de suelo</small></div>
+            ${sparkSVG(h.moist)}
+            <div class="mon-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <div>🌡️ Temp: <b>${h.temp.toFixed(1)} °C</b></div>
+                <div>💨 H. Aire: <b>${h.airHum.toFixed(1)} %</b></div>
+                <div style="grid-column: 1/-1; margin-top:4px; color:#2a75d3">💧 Riego sug: <b>${riegoFreq}</b></div>
+            </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('statMoisture').innerText = globalMoist.length ? (globalMoist.reduce((a,b)=>a+b)/globalMoist.length).toFixed(1) + '%' : '—';
+    alerts.innerHTML = alertHtml || '<div class="notice">Los cultivos mantienen niveles de humedad óptimos.</div>';
+}
+
+// Eventos
+document.getElementById('cropForm').addEventListener('submit', e => {
+    e.preventDefault();
+    state.crops.push({ id: Date.now().toString(), name: document.getElementById('cropName').value, area: document.getElementById('cropArea').value, stage: document.getElementById('cropStage').value });
+    saveData(); closeModal('cropModal'); showToast('Cultivo guardado');
+});
+document.getElementById('logForm').addEventListener('submit', e => {
+    e.preventDefault();
+    state.logs.push({ id: Date.now().toString(), cropId: document.getElementById('logCrop').value, type: document.getElementById('logType').value, value: document.getElementById('logValue').value, synced: isOnline });
+    saveData(); document.getElementById('logForm').reset(); showToast(isOnline ? 'Enviado a la nube' : 'Guardado Offline');
+});
+
+// Controladores
+function setConnection(status) { isOnline = status; document.getElementById('connectText').innerText = status ? 'Conexión a internet estable.' : '¡Sin conexión! Guardado local activado.'; updateUI(); }
+function syncData() { if(!isOnline) return showToast('Error: Sin conexión'); state.logs.forEach(l => l.synced = true); saveData(); showToast('Sincronizado con la nube'); }
+function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function deleteCrop(id) { state.crops = state.crops.filter(c => c.id !== id); delete liveHist[id]; saveData(); showToast('Cultivo eliminado'); }
+function setupNavigation() { document.getElementById('nav').addEventListener('click', e => { if(e.target.tagName !== 'BUTTON') return; document.querySelectorAll('nav button').forEach(b => b.classList.remove('active')); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); e.target.classList.add('active'); document.getElementById(e.target.dataset.page).classList.add('active'); document.getElementById('pageTitle').innerText = e.target.innerText.substring(3); }); }
+function exportCSV() { let csv = "data:text/csv;charset=utf-8,Fecha,CultivoID,Actividad,Valor,Sincronizado\n"; state.logs.forEach(l => { csv += `Hoy,${l.cropId},${l.type},${l.value},${l.synced}\n`; }); const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "reporte.csv"; document.body.appendChild(link); link.click(); }
+
+window.onload = initApp;
+</script>
+</body>
+</html>
