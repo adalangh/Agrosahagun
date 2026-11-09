@@ -6,23 +6,19 @@
 <meta name="theme-color" content="#123d2b">
 <title>AgroSahagún | Monitoreo de cultivos en tiempo real</title>
 
-<!-- LIBRERÍAS DE FIREBASE (Versión Compat para uso directo en HTML) -->
+<!-- LIBRERÍAS DE FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
-/* =========================================
-   VARIABLES Y RESET
-========================================= */
+/* VARIABLES Y RESET */
 :root{--green:#176b45;--green2:#238557;--lime:#dff2e7;--ink:#183329;--muted:#64756c;--bg:#f3f7f4;--white:#fff;--line:#e2ebe5;--orange:#e99a36;--red:#c94b43;--nav-bg:#123d2b;--shadow:0 8px 28px #173c2910}
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
 body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink); overflow-x: hidden;}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer; transition: 0.2s;}
 
-/* =========================================
-   ESTRUCTURA PRINCIPAL (TOP NAVBAR)
-========================================= */
+/* ESTRUCTURA PRINCIPAL (TOP NAVBAR) */
 .app { display: flex; flex-direction: column; min-height: 100vh; }
 .main-header { background: var(--nav-bg); color: #eaf6ef; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 70px; gap: 20px;}
 .brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0;}
@@ -46,9 +42,7 @@ button{cursor:pointer; transition: 0.2s;}
 .page.active { display: block; animation: fadeIn 0.4s ease forwards; } 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* =========================================
-   ELEMENTOS DE INTERFAZ (UI)
-========================================= */
+/* ELEMENTOS DE INTERFAZ (UI) */
 .heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; flex-wrap: wrap;}
 .eyebrow { text-transform: uppercase; letter-spacing: .1em; color: var(--green2); font-size: 11px; font-weight: 800; }
 .heading h1 { margin: 5px 0 6px; font-size: 26px; }
@@ -114,9 +108,7 @@ th { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weigh
 .modal-box { background: white; border-radius: 20px; padding: 28px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;}
 .close { float: right; border: 0; background: #f3f7f4; border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; color: var(--muted); }
 
-/* =========================================
-   MEDIA QUERIES (RESPONSIVO MÓVIL)
-========================================= */
+/* MEDIA QUERIES (RESPONSIVO MÓVIL) */
 @media (max-width: 950px) {
   .main-header { flex-direction: column; height: auto; padding: 12px; gap: 12px; align-items: stretch; }
   .brand { justify-content: center; }
@@ -211,7 +203,7 @@ th { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weigh
         </div>
       </section>
 
-      <!-- RESTO DE PANELES (Ocultos inicialmente) -->
+      <!-- RESTO DE PANELES -->
       <section class="page" id="clima">
         <div class="heading">
           <div><div class="eyebrow">Bloque de Procesamiento</div><h1>Motor de Análisis Agrícola</h1><p class="sub">Cálculo de requerimientos hídricos ($ET_c = K_c \times ET_0$).</p></div>
@@ -315,19 +307,21 @@ th { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weigh
 
 <div class="toast" id="toast"><span>✓</span> <span id="toastMsg">Mensaje</span></div>
 
-<!-- ==============================================
-   SCRIPT PRINCIPAL (FIREBASE + LOGICA)
-=============================================== -->
+<!-- SCRIPT PRINCIPAL (FIREBASE + LOGICA) -->
 <script>
-// 1. CONFIGURACIÓN DE FIREBASE (¡REEMPLAZA ESTO CON TUS CLAVES!)
+// =========================================================================
+// 1. CONFIGURACIÓN DE FIREBASE 
+// INTEGRADA CON TUS CREDENCIALES EXACTAS DE PROYECTO
+// =========================================================================
 const firebaseConfig = {
-  apiKey: "API_KEY_AQUI",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://agrosahagun-d9bef-default-rtdb.firebaseio.com/",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyDvj6kt6Rtd1EtzrSWrVDtm5wIk4hIX89s",
+  authDomain: "agrosahagun-d9bef.firebaseapp.com",
+  databaseURL: "https://agrosahagun-d9bef-default-rtdb.firebaseio.com",
+  projectId: "agrosahagun-d9bef",
+  storageBucket: "agrosahagun-d9bef.firebasestorage.app",
+  messagingSenderId: "303610277109",
+  appId: "1:303610277109:web:671758b2767a045c3ee9bc",
+  measurementId: "G-89YELBTXVL"
 };
 
 // Inicializar Firebase
@@ -350,23 +344,17 @@ const cropInfo = {
     'Ñame':         { freq: 'Riego cada semana',   kcBase: 1.00, icon: '🍠' }
 };
 
-// ==============================================
-// 2. INICIALIZACIÓN Y NAVEGACIÓN
-// ==============================================
+// INICIALIZACIÓN Y NAVEGACIÓN
 function initApp() {
-    // 1. Cargar caché local por si empezamos sin internet
     const saved = localStorage.getItem(APP_KEY);
     if (saved) state = JSON.parse(saved);
 
-    // 2. Iniciar conexión en tiempo real a Firebase
     setupFirebaseListeners();
-
     setupNavigation();
     updateUI();
     setInterval(simulateRealTimeSensors, 3000); 
 }
 
-// Lógica de URL con Hash (#) para no perder la página al recargar
 function setupNavigation() { 
     let initialHash = window.location.hash.substring(1) || 'inicio';
     activateTab(initialHash);
@@ -398,23 +386,17 @@ function activateTab(pageId) {
     document.getElementById('pageTitle').innerText = btn.dataset.title; 
 }
 
-// ==============================================
-// 3. LÓGICA DE FIREBASE Y GUARDADO
-// ==============================================
-
+// LÓGICA DE FIREBASE Y GUARDADO
 function setupFirebaseListeners() {
-    // Escucha TODOS los cambios en la nube en tiempo real
     database.ref('agrosahagun_db').on('value', (snapshot) => {
         const data = snapshot.val();
-        
         if (data) {
-            // Si hay datos en la nube, actualiza el estado y el caché local
             state.crops = data.crops || [];
             state.logs = data.logs || [];
             localStorage.setItem(APP_KEY, JSON.stringify(state));
             updateUI();
         } else if (state.crops.length === 0) {
-            // Si la nube está vacía, subimos datos de prueba iniciales
+            // Datos de prueba iniciales si la nube está vacía
             state.crops = [
                 { id: '1', name: 'Pepino verde', area: 0.5, stage: 'Floración / Fructificación' },
                 { id: '2', name: 'Yuca', area: 3.5, stage: 'Preparación / Siembra' }
@@ -424,27 +406,21 @@ function setupFirebaseListeners() {
     });
 }
 
-// Enviar datos a la nube
 function pushToFirebase() {
     if (isOnline) {
-        // Guarda en Firebase (esto disparará el listener de arriba para todos los usuarios)
         database.ref('agrosahagun_db').set({
             crops: state.crops,
             logs: state.logs
         });
         showToast('Datos guardados en Firebase Cloud.');
     } else {
-        // Guarda solo localmente simulando modo "Offline"
         localStorage.setItem(APP_KEY, JSON.stringify(state));
         updateUI();
         showToast('Guardado en caché local (Sin internet).');
     }
 }
 
-// ==============================================
-// 4. EVENTOS DE FORMULARIOS
-// ==============================================
-
+// EVENTOS DE FORMULARIOS
 document.getElementById('cropForm').addEventListener('submit', e => {
     e.preventDefault();
     const sel = document.getElementById('cropName').value;
@@ -466,7 +442,7 @@ document.getElementById('logForm').addEventListener('submit', e => {
         cropId: document.getElementById('logCrop').value, 
         type: document.getElementById('logType').value, 
         value: document.getElementById('logValue').value, 
-        synced: isOnline // Marca si se subió a Firebase o se quedó en local
+        synced: isOnline 
     });
     pushToFirebase(); 
     document.getElementById('logForm').reset(); 
@@ -478,9 +454,7 @@ function deleteCrop(id) {
     pushToFirebase(); 
 }
 
-// ==============================================
-// 5. GESTOR DE CONECTIVIDAD (Modo Offline)
-// ==============================================
+// GESTOR DE CONECTIVIDAD (Modo Offline)
 function setConnection(status) { 
     isOnline = status; 
     document.getElementById('connectText').innerText = status ? 'Conexión a Firebase activa.' : '¡Sin conectividad! Guardado local activado.'; 
@@ -492,14 +466,11 @@ function syncData() {
     if(!isOnline) return showToast('Error: Activa la conexión primero.'); 
     if(pending === 0) return showToast('No hay datos pendientes.');
     
-    // Cambia el estado y sube todo el paquete local a Firebase
     state.logs.forEach(l => l.synced = true); 
     pushToFirebase(); 
 }
 
-// ==============================================
-// 6. MOTOR ANALÍTICO Y UI (Intacto)
-// ==============================================
+// MOTOR ANALÍTICO Y UI
 function calcularETc(nombreCultivo, etapa) {
     const ET0_SAHAGUN = 5.2; 
     let kc = cropInfo[nombreCultivo]?.kcBase || 0.8;
