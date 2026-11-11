@@ -345,9 +345,30 @@
             <option value="Cosecha">Cosecha</option>
           </select>
         </div>
+        <div class="field full">
+          <label for="cropIrrigation">Riego sugerido</label>
+          <input id="cropIrrigation" type="text" list="irrigationList" maxlength="60" autocomplete="off"
+                 placeholder="Automático según la especie">
+          <datalist id="irrigationList"></datalist>
+          <small class="field-hint">Déjalo vacío para usar la recomendación automática de la especie.</small>
+        </div>
+        <div class="field full form-section">Ubicación del cultivo</div>
+        <div class="field full">
+          <label for="cropDepartamento">Departamento</label>
+          <select id="cropDepartamento" required></select>
+        </div>
+        <div class="field">
+          <label for="cropCiudad">Ciudad / Municipio</label>
+          <input id="cropCiudad" type="text" list="ciudadList" maxlength="60" autocomplete="off" required value="Sahagún">
+          <datalist id="ciudadList"></datalist>
+        </div>
+        <div class="field">
+          <label for="cropVereda">Vereda / Corregimiento</label>
+          <input id="cropVereda" type="text" maxlength="60" autocomplete="off" required value="Salguerito">
+        </div>
       </div>
       <div class="actions">
-        <button class="btn" type="submit" style="width:100%">Guardar en Firebase</button>
+        <button class="btn" type="submit" id="cropSubmitBtn" style="width:100%">Guardar en Firebase</button>
       </div>
     </form>
   </div>

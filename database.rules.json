@@ -1,12 +1,43 @@
-   {
-     "agrosahagun_db": {
-       "users": {
-         "D07Nqyi67aSDe31AVyXE3JAbvcT2": {
-           "name": "Administrador",
-           "email": "adalbertolang@gmail.com",
-           "role": "admin",
-           "active": true
-         }
-       }
-     }
-   }
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "agrosahagun_db": {
+      "users": {
+        ".read": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'admin' && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'admin' && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true"
+        }
+      },
+      "crops": {
+        ".read": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true",
+        "$cropId": {
+          ".write": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true && (root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'admin' || root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'operario')",
+          ".validate": "newData.hasChildren(['id', 'name', 'area', 'stage'])",
+          "id": { ".validate": "newData.isString()" },
+          "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+          "area": { ".validate": "newData.isNumber() && newData.val() > 0" },
+          "stage": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+          "irrigation": { ".validate": "newData.isString() && newData.val().length <= 60" },
+          "location": {
+            ".validate": "newData.hasChildren(['departamento', 'ciudad', 'vereda'])",
+            "departamento": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+            "ciudad": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+            "vereda": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" }
+          },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "updatedAt": { ".validate": "newData.isNumber()" },
+          "createdBy": { ".validate": "newData.isString()" },
+          "updatedBy": { ".validate": "newData.isString()" }
+        }
+      },
+      "logs": {
+        ".read": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true",
+        "$logId": {
+          ".write": "auth != null && root.child('agrosahagun_db/users/' + auth.uid + '/active').val() === true && (root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'admin' || root.child('agrosahagun_db/users/' + auth.uid + '/role').val() === 'operario')"
+        }
+      }
+    }
+  }
+}

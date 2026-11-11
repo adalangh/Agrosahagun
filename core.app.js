@@ -23,6 +23,7 @@ class AppController {
       globalMoistures: []
     };
     this.started = false;
+    this.editingCropId = null;
   }
 
   /** Punto de entrada: la app solo arranca con una sesión válida. */
@@ -118,7 +119,11 @@ class AppController {
 
     uiManager.renderStats(stats);
     uiManager.renderConnectionState(connectionStatus, pendingCount);
-    uiManager.renderCropsTable(this.state.crops, (cropId) => this.handleDeleteCrop(cropId));
+    uiManager.renderCropsTable(
+      this.state.crops,
+      (cropId) => this.handleDeleteCrop(cropId),
+      (cropId) => this.openCropModal(cropId)
+    );
     uiManager.renderCropSelectOptions(this.state.crops);
     uiManager.renderLogsTable(this.state.logs, this.state.crops, (logId) => this.handleDeleteLog(logId));
     uiManager.renderWaterAnalysis(this.state.crops);
@@ -129,12 +134,14 @@ class AppController {
    * Conecta los escuchadores de eventos del DOM
    */
   bindEvents() {
-    // Formulario de nuevo cultivo
+    uiManager.setupCropForm();
+
+    // Formulario de cultivo (registrar / editar)
     const cropForm = document.getElementById('cropForm');
     if (cropForm) {
       cropForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        await this.handleCreateCrop();
+        await this.handleSaveCrop();
       });
     }
 
@@ -200,7 +207,11 @@ class AppController {
     document.querySelectorAll('[data-open-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         const modalId = btn.dataset.openModal;
-        uiManager.openModal(modalId);
+        if (modalId === 'cropModal') {
+          this.openCropModal(null); // "Registrar cultivo" siempre abre el formulario vacío
+        } else {
+          uiManager.openModal(modalId);
+        }
       });
     });
 
@@ -214,38 +225,85 @@ class AppController {
   }
 
   /**
-   * Manejador de creación de cultivo
+   * Abre el modal de cultivo para registrar (cropId = null) o editar uno existente.
+   * Cualquier usuario activo (administrador u operario) puede editar.
+   * @param {string|null} cropId
    */
-  async handleCreateCrop() {
-    const cropNameEl = document.getElementById('cropName');
-    const cropAreaEl = document.getElementById('cropArea');
-    const cropStageEl = document.getElementById('cropStage');
+  openCropModal(cropId = null) {
+    const crop = cropId ? this.state.crops.find(c => c.id === cropId) : null;
+    if (cropId && !crop) {
+      uiManager.showToast('No se encontró el cultivo. Puede que lo hayan eliminado.', 'error');
+      return;
+    }
+    this.editingCropId = crop ? crop.id : null;
+    uiManager.prepareCropModal(crop);
+    uiManager.openModal('cropModal');
+  }
 
-    if (!cropNameEl || !cropAreaEl || !cropStageEl) return;
+  /**
+   * Manejador de registro y edición de cultivo
+   */
+  async handleSaveCrop() {
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
 
-    const area = parseFloat(cropAreaEl.value);
+    const area = parseFloat(val('cropArea'));
     if (isNaN(area) || area <= 0) {
       uiManager.showToast('Ingresa un área sembrada válida (mayor a 0).', 'error');
       return;
     }
 
-    const newCrop = {
-      id: Date.now().toString(),
-      name: cropNameEl.value.trim(),
-      area: area,
-      stage: cropStageEl.value
+    const location = {
+      departamento: val('cropDepartamento'),
+      ciudad: val('cropCiudad'),
+      vereda: val('cropVereda')
     };
+    if (!location.departamento || !location.ciudad || !location.vereda) {
+      uiManager.showToast('Completa la ubicación: departamento, ciudad y vereda/corregimiento.', 'error');
+      return;
+    }
 
-    const res = await firebaseService.saveCrop(newCrop);
+    const irrigation = val('cropIrrigation');
+    const uid = authService.profile?.uid;
+    const existing = this.editingCropId
+      ? this.state.crops.find(c => c.id === this.editingCropId)
+      : null;
+
+    if (this.editingCropId && !existing) {
+      uiManager.showToast('El cultivo ya no existe; no se pudo guardar el cambio.', 'error');
+      uiManager.closeModal('cropModal');
+      return;
+    }
+
+    const crop = {
+      ...(existing || { id: Date.now().toString(), createdAt: Date.now(), ...(uid ? { createdBy: uid } : {}) }),
+      name: val('cropName'),
+      area,
+      stage: val('cropStage'),
+      location,
+      updatedAt: Date.now(),
+      ...(uid ? { updatedBy: uid } : {})
+    };
+    // Sin riego manual => se usa el automático de la especie (no se guarda texto vacío)
+    if (irrigation) crop.irrigation = irrigation; else delete crop.irrigation;
+
+    const res = await firebaseService.saveCrop(crop);
 
     if (res.offline) {
-      uiManager.showToast('Cultivo guardado en caché local (Pendiente de sincronizar).', 'warn');
+      uiManager.showToast(
+        existing ? 'Cambios guardados en caché local (pendientes de sincronizar).'
+                 : 'Cultivo guardado en caché local (Pendiente de sincronizar).',
+        'warn'
+      );
     } else {
-      uiManager.showToast(`Cultivo "${newCrop.name}" guardado en Firebase Cloud.`, 'success');
+      uiManager.showToast(
+        existing ? `Cultivo "${crop.name}" actualizado en Firebase Cloud.`
+                 : `Cultivo "${crop.name}" guardado en Firebase Cloud.`,
+        'success'
+      );
     }
 
     uiManager.closeModal('cropModal');
-    document.getElementById('cropForm').reset();
+    this.editingCropId = null;
     this.refreshUI();
   }
 

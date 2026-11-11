@@ -4,7 +4,10 @@
  * y renderizado reactivo de tablas, métricas, gráficas y alertas.
  */
 
-import { getCropInfo, CROP_CATALOG, FIELD_LABOR_TYPES } from './data.crop-catalog.js';
+import {
+  getCropInfo, CROP_CATALOG, FIELD_LABOR_TYPES, DEPARTAMENTOS, MUNICIPIOS_CORDOBA,
+  DEFAULT_LOCATION, IRRIGATION_SUGGESTIONS, getCropIrrigation, formatLocation
+} from './data.crop-catalog.js';
 import { agronomyService, ET0_SAHAGUN } from './services.agronomy-service.js';
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -214,8 +217,9 @@ export class UIManager {
    * Renderiza la tabla de cultivos
    * @param {Array} crops
    * @param {(cropId: string) => void} onDeleteCrop
+   * @param {(cropId: string) => void} [onEditCrop]
    */
-  renderCropsTable(crops = [], onDeleteCrop) {
+  renderCropsTable(crops = [], onDeleteCrop, onEditCrop) {
     const container = document.getElementById('cropTable');
     if (!container) return;
 
@@ -235,11 +239,15 @@ export class UIManager {
           </td>
           <td><b>${c.area}</b> ha</td>
           <td><span class="tag">${esc(c.stage)}</span></td>
-          <td><small style="color:var(--muted)">${info.freq}</small></td>
-          <td style="text-align:right">
-            <button class="btn danger btn-sm" data-delete-crop="${c.id}" title="Eliminar cultivo">
-              Eliminar
-            </button>
+          <td><small style="color:var(--muted)">${esc(getCropIrrigation(c))}</small>${c.irrigation ? ' <span class="tag" title="Riego definido manualmente">✎</span>' : ''}</td>
+          <td class="loc-cell">${formatLocation(c.location)
+            ? `<b>${esc(c.location.vereda || '—')}</b><br><small>${esc([c.location.ciudad, c.location.departamento].filter(Boolean).join(', '))}</small>`
+            : '<small>Sin ubicación</small>'}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn secondary btn-sm" data-edit-crop="${esc(c.id)}" title="Editar cultivo">Editar</button>
+              <button class="btn danger btn-sm" data-delete-crop="${esc(c.id)}" title="Eliminar cultivo">Eliminar</button>
+            </div>
           </td>
         </tr>
       `;
@@ -253,6 +261,7 @@ export class UIManager {
             <th>Área</th>
             <th>Etapa de Desarrollo</th>
             <th>Riego Sugerido</th>
+            <th>Ubicación</th>
             <th style="text-align:right">Acción</th>
           </tr>
         </thead>
@@ -270,6 +279,86 @@ export class UIManager {
         }
       });
     });
+
+    container.querySelectorAll('[data-edit-crop]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof onEditCrop === 'function') onEditCrop(btn.dataset.editCrop);
+      });
+    });
+  }
+
+  /**
+   * Prepara las listas y eventos del formulario de cultivo (se ejecuta una sola vez).
+   */
+  setupCropForm() {
+    if (this.cropFormReady) return;
+    const depSel = document.getElementById('cropDepartamento');
+    const nameSel = document.getElementById('cropName');
+    if (!depSel || !nameSel) return;
+    this.cropFormReady = true;
+
+    // defaultSelected hace que form.reset() vuelva a la finca por defecto
+    depSel.innerHTML = DEPARTAMENTOS.map(d =>
+      `<option value="${esc(d)}"${d === DEFAULT_LOCATION.departamento ? ' selected' : ''}>${esc(d)}</option>`
+    ).join('');
+
+    const irr = document.getElementById('irrigationList');
+    if (irr) irr.innerHTML = IRRIGATION_SUGGESTIONS.map(s => `<option value="${esc(s)}"></option>`).join('');
+
+    depSel.addEventListener('change', () => this.updateCityList());
+    nameSel.addEventListener('change', () => this.updateIrrigationPlaceholder());
+    this.updateCityList();
+    this.updateIrrigationPlaceholder();
+  }
+
+  /** Sugiere los municipios de Córdoba solo cuando ese es el departamento elegido. */
+  updateCityList() {
+    const list = document.getElementById('ciudadList');
+    const dep = document.getElementById('cropDepartamento');
+    if (!list || !dep) return;
+    list.innerHTML = dep.value === 'Córdoba'
+      ? MUNICIPIOS_CORDOBA.map(m => `<option value="${esc(m)}"></option>`).join('')
+      : '';
+  }
+
+  /** El placeholder del riego muestra la recomendación automática de la especie elegida. */
+  updateIrrigationPlaceholder() {
+    const input = document.getElementById('cropIrrigation');
+    const name = document.getElementById('cropName');
+    if (input && name) input.placeholder = `Automático: ${getCropInfo(name.value).freq}`;
+  }
+
+  /**
+   * Deja el modal de cultivo en modo "registrar" (crop = null) o "editar" (crop = objeto).
+   * @param {object|null} crop
+   */
+  prepareCropModal(crop = null) {
+    this.setupCropForm();
+    const form = document.getElementById('cropForm');
+    if (!form) return;
+    form.reset();
+
+    const $ = (id) => document.getElementById(id);
+    $('cropModalTitle').textContent = crop ? 'Editar cultivo' : 'Registrar nuevo cultivo';
+    $('cropSubmitBtn').textContent = crop ? 'Guardar cambios' : 'Guardar en Firebase';
+
+    if (crop) {
+      const loc = crop.location || {};
+      // Si la especie ya no está en el catálogo, se agrega para no perderla al editar
+      const nameSel = $('cropName');
+      if (![...nameSel.options].some(o => o.value === crop.name)) {
+        nameSel.add(new Option(crop.name, crop.name));
+      }
+      nameSel.value = crop.name;
+      $('cropArea').value = crop.area;
+      $('cropStage').value = crop.stage;
+      $('cropIrrigation').value = crop.irrigation || '';
+      $('cropDepartamento').value = loc.departamento || DEFAULT_LOCATION.departamento;
+      $('cropCiudad').value = loc.ciudad || '';
+      $('cropVereda').value = loc.vereda || '';
+    }
+    this.updateCityList();
+    this.updateIrrigationPlaceholder();
   }
 
   /**

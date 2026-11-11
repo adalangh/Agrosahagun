@@ -181,13 +181,15 @@ export class FirebaseService {
       const remoteLogIds = new Set(remote.logs.map(l => l.id));
       const unsyncedLogs = (localState.logs || []).filter(l => !l.synced && !remoteLogIds.has(l.id));
 
-      const remoteCropIds = new Set(remote.crops.map(c => c.id));
-      const pendingCrops = storageService.getOfflineQueue()
-        .filter(q => q.action === 'SAVE_CROP')
-        .map(q => q.payload)
-        .filter(c => !remoteCropIds.has(c.id));
+      // Aplicar encima de lo remoto los cambios de cultivos aún en cola (altas, EDICIONES y bajas),
+      // para que un snapshot no revierta una edición hecha sin conexión.
+      const cropsById = new Map(remote.crops.map(c => [c.id, c]));
+      for (const q of storageService.getOfflineQueue()) {
+        if (q.action === 'SAVE_CROP') cropsById.set(q.payload.id, q.payload);
+        else if (q.action === 'DELETE_CROP') cropsById.delete(q.payload);
+      }
 
-      const newState = { crops: [...remote.crops, ...pendingCrops], logs: [...remote.logs, ...unsyncedLogs] };
+      const newState = { crops: [...cropsById.values()], logs: [...remote.logs, ...unsyncedLogs] };
       storageService.saveState(newState);
       this.onDataChangeCallback?.(newState);
     };

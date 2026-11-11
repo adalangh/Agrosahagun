@@ -184,3 +184,11 @@ tr:hover td { background: rgba(196,98,26,.05); }
   .sub-header, .content { padding-left: 16px; padding-right: 16px; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
+/* Edición de cultivos y ubicación */
+.field-hint { font-size: 11px; color: var(--muted); }
+.form-section { margin-top: 6px; padding-top: 12px; border-top: 1px dashed var(--line); font: 600 11px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--orange); }
+.loc-cell { font-size: 12px; line-height: 1.35; }
+.loc-cell small { color: var(--muted); }
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+@media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }

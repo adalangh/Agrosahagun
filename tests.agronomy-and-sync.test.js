@@ -125,3 +125,18 @@ test('AuthService - mapeo de errores de Firebase Auth a mensajes en español', a
   assert.equal(mapAuthError({ message: 'PERMISSION_DENIED: x' }), 'No tienes permisos para esta acción.');
   assert.ok(mapAuthError({}).length > 0);
 });
+
+test('CropCatalog - Riego editado manualmente tiene prioridad sobre el de la especie', async () => {
+  const { getCropIrrigation } = await import('./data.crop-catalog.js');
+  assert.equal(getCropIrrigation({ name: 'Maíz' }), 'Riego cada 3-4 días');
+  assert.equal(getCropIrrigation({ name: 'Maíz', irrigation: '  ' }), 'Riego cada 3-4 días');
+  assert.equal(getCropIrrigation({ name: 'Maíz', irrigation: 'Riego diario' }), 'Riego diario');
+  const res = agronomyService.calculateWaterRequirements({ name: 'Maíz', area: 1, stage: 'Cosecha', irrigation: 'Riego diario' });
+  assert.equal(res.freqRecomendada, 'Riego diario');
+});
+
+test('CropCatalog - Formato de ubicación del cultivo', async () => {
+  const { formatLocation } = await import('./data.crop-catalog.js');
+  assert.equal(formatLocation({ departamento: 'Córdoba', ciudad: 'Sahagún', vereda: 'Salguerito' }), 'Salguerito · Sahagún, Córdoba');
+  assert.equal(formatLocation(undefined), '');
+});

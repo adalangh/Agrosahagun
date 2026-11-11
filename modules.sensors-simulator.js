@@ -4,7 +4,7 @@
  * renderiza gráficos vectoriales SVG sparklines y emite alertas agronómicas automáticas.
  */
 
-import { getCropInfo } from './data.crop-catalog.js';
+import { getCropInfo, getCropIrrigation } from './data.crop-catalog.js';
 
 function randomRange(min, max) {
   return min + Math.random() * (max - min);
@@ -89,7 +89,7 @@ export class SensorsSimulator {
       const currentMoisture = Number(newMoist.toFixed(1));
       globalMoistures.push(currentMoisture);
 
-      const info = getCropInfo(crop.name);
+      const info = { ...getCropInfo(crop.name), freq: getCropIrrigation(crop) };
       const isCritical = currentMoisture < 28;
       const isLow = currentMoisture >= 28 && currentMoisture < (info.moistureMin || 40);
       const isSaturated = currentMoisture > 75;

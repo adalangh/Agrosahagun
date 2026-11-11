@@ -4,7 +4,7 @@
  * cálculo de lámina de agua por hectárea y volumen total según superficie sembrada.
  */
 
-import { getCropInfo } from './data.crop-catalog.js';
+import { getCropInfo, getCropIrrigation } from './data.crop-catalog.js';
 
 // Evapotranspiración de referencia representativa para Sahagún, Córdoba (mm/día)
 export const ET0_SAHAGUN = 5.2;
@@ -63,14 +63,12 @@ export class AgronomyService {
     const volumenHa = Number((etc * 10).toFixed(1)); // m³/ha/día
     const volumenTotalLote = Number((volumenHa * areaNum).toFixed(1)); // m³/día para el lote completo
 
-    const info = getCropInfo(crop.name);
-
     return {
       kc,
       etc,
       volumenHa,
       volumenTotalLote,
-      freqRecomendada: info.freq,
+      freqRecomendada: getCropIrrigation(crop),
       areaNum
     };
   }

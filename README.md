@@ -102,6 +102,13 @@ La app exige iniciar sesión (Firebase Authentication, correo + contraseña). Ro
 
 Desde ahí, el administrador crea al resto de usuarios dentro de la app.
 
+### Editar cultivos y ubicación
+* En **Cultivos** cada fila tiene el botón **Editar** (administrador y operario). Se pueden cambiar especie, área, etapa, riego sugerido y ubicación.
+* **Riego sugerido**: si lo dejas vacío se usa la recomendación automática de la especie; si escribes uno, ese manda en la tabla, las tarjetas en vivo y el análisis hídrico.
+* **Ubicación** (obligatoria al registrar): departamento, ciudad/municipio y vereda/corregimiento. Se guarda en `crops/{id}/location`. Los cultivos antiguos aparecen como "Sin ubicación" hasta que se editen.
+* Las ediciones hechas sin internet quedan en la cola y no se revierten al llegar un snapshot de la nube.
+* `database.rules.json` ahora contiene las reglas completas (acceso por rol y validación de los campos del cultivo): **vuelve a publicarlas** en Realtime Database → Rules.
+
 ### Seguridad
 * La configuración web de Firebase (`firebase-config.js`) es pública por diseño; **lo que protege los datos son las reglas**. Publícalas antes de compartir el repo.
 * Recomendado: restringe la API key por referrer HTTP (Google Cloud Console → Credenciales).
