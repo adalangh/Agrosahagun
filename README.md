@@ -18,6 +18,7 @@ El código ha sido completamente refactorizado y desacoplado en módulos especia
 
 ```
 Agrosahagun/
+├── database.rules.json          # Reglas de seguridad de RTDB (roles y usuarios activos)
 ├── index.html                   # Interfaz semántica limpia (sin scripts ni estilos embebidos)
 ├── package.json                 # Metadatos del proyecto y comandos de prueba y ejecución
 ├── README.md                    # Documentación técnica completa
@@ -29,6 +30,7 @@ Agrosahagun/
 │   ├── data/
 │   │   └── crop-catalog.js      # Catálogo agronómico regional (Kc base, frecuencias, iconos)
 │   ├── services/
+│   │   ├── auth-service.js      # Login, roles y gestión de usuarios (Firebase Auth)
 │   │   ├── firebase-service.js  # CRUD granular, escuchas en tiempo real, conectividad (.info/connected)
 │   │   ├── storage-service.js   # Persistencia en localStorage y cola de mutaciones offline
 │   │   └── agronomy-service.js  # Motor FAO-56 (ETc = Kc * ET0, lámina hídrica y volumen m³)
@@ -36,6 +38,7 @@ Agrosahagun/
 │   │   ├── sensors-simulator.js # Telemetría IoT en vivo, sparklines SVG y evaluación de alertas
 │   │   └── export-service.js    # Generación y descarga de reportes (CSV con BOM UTF-8 y JSON)
 │   ├── ui/
+│   │   ├── auth-ui.js           # Pantalla de login y panel de usuarios
 │   │   └── ui-manager.js        # Gestión del DOM, modales, toasts, navegación y render reactivo
 │   └── app.js                   # Orquestador del ciclo de vida y eventos del sistema
 └── tests/
@@ -86,6 +89,33 @@ $$ET_c = K_c \times ET_0$$
 * **Lámina y volumen de reposición hídrica:**
   $$\text{Volumen por Hectárea } (m^3/\text{ha/día}) = ET_c \times 10$$
   $$\text{Volumen Total del Lote } (m^3/\text{día}) = \text{Volumen por Hectárea} \times \text{Área Sembrada (ha)}$$
+
+---
+
+## 🔐 Acceso y usuarios
+
+La app exige iniciar sesión (Firebase Authentication, correo + contraseña). Roles:
+
+| Rol | Puede |
+|---|---|
+| **Administrador** | Todo, más crear usuarios, cambiar rol, desactivar y reiniciar contraseñas (pestaña *Usuarios*) |
+| **Operario** | Gestionar cultivos y registros de campo |
+
+### Puesta en marcha (una sola vez)
+1. Firebase Console → **Authentication → Sign-in method** → habilita *Correo/contraseña*.
+2. **Authentication → Users → Add user**: crea tu cuenta de administrador y copia su **UID**.
+3. **Realtime Database → Data**: crea el nodo `agrosahagun_db/users/<UID>` con
+   `{ "name": "Tu nombre", "email": "tu@correo.com", "role": "admin", "active": true }`.
+4. **Realtime Database → Rules**: pega el contenido de [`database.rules.json`](database.rules.json) y publica.
+5. **Authentication → Settings → Authorized domains**: agrega tu dominio de GitHub Pages (`usuario.github.io`).
+
+Desde ahí, el administrador crea al resto de usuarios dentro de la app.
+
+### Seguridad
+* La configuración web de Firebase (`firebase-config.js`) es pública por diseño; **lo que protege los datos son las reglas**. Publícalas antes de compartir el repo.
+* Recomendado: restringe la API key por referrer HTTP (Google Cloud Console → Credenciales).
+* Un usuario desactivado pierde el acceso a los datos de inmediato (lo exigen las reglas, no solo la interfaz).
+* Las cuentas se crean con una app secundaria de Firebase para no cerrar la sesión del administrador.
 
 ---
 

@@ -1,0 +1,20 @@
+{
+  "name": "agrosahagun",
+  "version": "2.0.0",
+  "description": "Sistema de monitoreo, analítica y decisiones agrícolas para Sahagún, Córdoba con persistencia en tiempo real en Firebase RTDB.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "agriculture",
+    "firebase",
+    "iot-monitoring",
+    "agronomy",
+    "fao-56",
+    "offline-first"
+  ],
+  "author": "AgroSahagun",
+  "license": "MIT"
+}
