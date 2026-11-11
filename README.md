@@ -17,33 +17,24 @@ El sistema está optimizado para operar en condiciones de conectividad intermite
 El código ha sido completamente refactorizado y desacoplado en módulos especializados bajo el estándar **ES6 Modules**:
 
 ```
-Agrosahagun/
-├── database.rules.json          # Reglas de seguridad de RTDB (roles y usuarios activos)
-├── index.html                   # Interfaz semántica limpia (sin scripts ni estilos embebidos)
-├── package.json                 # Metadatos del proyecto y comandos de prueba y ejecución
-├── README.md                    # Documentación técnica completa
-├── css/
-│   └── styles.css               # Hoja de estilos centralizada, variables CSS y diseño responsivo
-├── js/
-│   ├── config/
-│   │   └── firebase-config.js   # Credenciales, inicialización y rutas de Firebase RTDB
-│   ├── data/
-│   │   └── crop-catalog.js      # Catálogo agronómico regional (Kc base, frecuencias, iconos)
-│   ├── services/
-│   │   ├── auth-service.js      # Login, roles y gestión de usuarios (Firebase Auth)
-│   │   ├── firebase-service.js  # CRUD granular, escuchas en tiempo real, conectividad (.info/connected)
-│   │   ├── storage-service.js   # Persistencia en localStorage y cola de mutaciones offline
-│   │   └── agronomy-service.js  # Motor FAO-56 (ETc = Kc * ET0, lámina hídrica y volumen m³)
-│   ├── modules/
-│   │   ├── sensors-simulator.js # Telemetría IoT en vivo, sparklines SVG y evaluación de alertas
-│   │   └── export-service.js    # Generación y descarga de reportes (CSV con BOM UTF-8 y JSON)
-│   ├── ui/
-│   │   ├── auth-ui.js           # Pantalla de login y panel de usuarios
-│   │   └── ui-manager.js        # Gestión del DOM, modales, toasts, navegación y render reactivo
-│   └── app.js                   # Orquestador del ciclo de vida y eventos del sistema
-└── tests/
-    └── agronomy-and-sync.test.js# Pruebas unitarias automatizadas (Node.js Test Runner)
+index.html                       # Punto de entrada
+css.styles.css                   # Estilos
+core.app.js                      # Controlador principal
+config.firebase-config.js        # Configuración de Firebase
+data.crop-catalog.js             # Catálogo de cultivos
+modules.export-service.js        # Exportación de reportes
+modules.sensors-simulator.js     # Simulador de sensores
+services.agronomy-service.js     # Cálculos agronómicos
+services.auth-service.js         # Login, roles y usuarios
+services.firebase-service.js     # Sincronización con Firebase
+services.storage-service.js      # Caché local y cola offline
+ui.auth-ui.js                    # Login y panel de usuarios
+ui.ui-manager.js                 # Interfaz
+tests.agronomy-and-sync.test.js  # Pruebas
+database.rules.json              # Reglas de seguridad de Firebase
+setup-admin.mjs                  # Crea el primer administrador
 ```
+Todos los archivos están en la misma carpeta; el prefijo antes del primer punto indica el grupo.
 
 ---
 

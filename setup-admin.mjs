@@ -8,7 +8,7 @@
  */
 import { readFileSync } from 'node:fs';
 
-const cfg = readFileSync(new URL('./js/config/firebase-config.js', import.meta.url), 'utf8');
+const cfg = readFileSync(new URL('./config.firebase-config.js', import.meta.url), 'utf8');
 const pick = (k) => (cfg.match(new RegExp(`${k}:\\s*"([^"]+)"`)) || [])[1];
 const apiKey = pick('apiKey'), dbUrl = pick('databaseURL');
 const user = process.argv[2] || 'admin';
